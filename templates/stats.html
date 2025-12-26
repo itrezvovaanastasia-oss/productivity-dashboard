@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Статистика - Панель продуктивности{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1><i class="bi bi-bar-chart"></i> Общая статистика</h1>
+        <p class="lead">Анализ данных по всем пользователям за последние 30 дней</p>
+    </div>
+</div>
+
+<!-- Средние значения -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-calculator"></i> Средние значения
+                    <button class="btn btn-sm btn-light float-end" onclick="refreshAverages()">
+                        <i class="bi bi-arrow-clockwise"></i> Обновить
+                    </button>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if averages %}
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <h6><i class="bi bi-moon text-primary"></i> Средний сон</h6>
+                            <h3>{{ "%.2f"|format(averages.avg_sleep or 0) }} ч</h3>
+                            <small>За {{ averages.total_records or 0 }} записей</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <h6><i class="bi bi-list-task text-success"></i> Средние задачи</h6>
+                            <h3>{{ "%.1f"|format(averages.avg_completed_tasks or 0) }}/{{ "%.1f"|format(averages.avg_planned_tasks or 0) }}</h3>
+                            <small>{{ "%.1f"|format(averages.avg_task_completion_rate or 0) }}% выполнения</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <h6><i class="bi bi-clock text-warning"></i> Продуктивные часы</h6>
+                            <h3>{{ "%.2f"|format(averages.avg_prod_used or 0) }}/{{ "%.2f"|format(averages.avg_prod_planned or 0) }} ч</h3>
+                            <small>{{ "%.1f"|format(averages.avg_productivity_rate or 0) }}% использования</small>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i> Нет данных для отображения
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Минимальные и максимальные значения -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-arrow-up-down"></i> Минимальные и максимальные значения
+                    <button class="btn btn-sm btn-light float-end" onclick="toggleSort()">
+                        <i class="bi bi-sort-down"></i> Изменить сортировку
+                    </button>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if min_max %}
+                <div class="table-responsive">
+                    <table class="table table-hover" id="minMaxTable">
+                        <thead>
+                            <tr>
+                                <th>Показатель</th>
+                                <th>Минимум</th>
+                                <th>Максимум</th>
+                                <th>Разница</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><i class="bi bi-moon"></i> Сон (часы)</td>
+                                <td>{{ "%.2f"|format(min_max.min_sleep or 0) }}</td>
+                                <td>{{ "%.2f"|format(min_max.max_sleep or 0) }}</td>
+                                <td>{{ "%.2f"|format((min_max.max_sleep or 0) - (min_max.min_sleep or 0)) }}</td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-list-check"></i> Запланированные задачи</td>
+                                <td>{{ min_max.min_planned_tasks or 0 }}</td>
+                                <td>{{ min_max.max_planned_tasks or 0 }}</td>
+                                <td>{{ (min_max.max_planned_tasks or 0) - (min_max.min_planned_tasks or 0) }}</td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-check-circle"></i> Выполненные задачи</td>
+                                <td>{{ min_max.min_completed_tasks or 0 }}</td>
+                                <td>{{ min_max.max_completed_tasks or 0 }}</td>
+                                <td>{{ (min_max.max_completed_tasks or 0) - (min_max.min_completed_tasks or 0) }}</td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-clock-history"></i> Продуктивные часы (план)</td>
+                                <td>{{ "%.2f"|format(min_max.min_prod_planned or 0) }}</td>
+                                <td>{{ "%.2f"|format(min_max.max_prod_planned or 0) }}</td>
+                                <td>{{ "%.2f"|format((min_max.max_prod_planned or 0) - (min_max.min_prod_planned or 0)) }}</td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-clock-fill"></i> Продуктивные часы (факт)</td>
+                                <td>{{ "%.2f"|format(min_max.min_prod_used or 0) }}</td>
+                                <td>{{ "%.2f"|format(min_max.max_prod_used or 0) }}</td>
+                                <td>{{ "%.2f"|format((min_max.max_prod_used or 0) - (min_max.min_prod_used or 0)) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i> Нет данных для отображения
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Графики -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Визуализация данных</h5>
+            </div>
+            <div class="card-body">
+                {% if graphs %}
+                    <div class="row">
+                        {% for graph in graphs %}
+                        <div class="col-12 mb-4">
+                            <div class="chart-container" style="height: 500px;" id="chart{{ loop.index }}"></div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i> Недостаточно данных для построения графиков
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Сводная информация -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-database"></i> Информация о данных</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Всего записей:</span>
+                        <span class="badge bg-primary">{{ total_stats }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Уникальных пользователей:</span>
+                        <span class="badge bg-success">{{ averages.unique_users or 0 }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Период данных:</span>
+                        <span>Последние 30 дней</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Обновление:</span>
+                        <span>В реальном времени</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Отображение графиков Plotly
+{% if graphs %}
+    {% for graph in graphs %}
+        Plotly.newPlot('chart{{ loop.index }}', JSON.parse('{{ graph|safe }}'));
+    {% endfor %}
+{% endif %}
+
+let sortAscending = true;
+
+function toggleSort() {
+    const table = document.getElementById('minMaxTable');
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    rows.sort((a, b) => {
+        const aVal = parseFloat(a.cells[3].textContent);
+        const bVal = parseFloat(b.cells[3].textContent);
+
+        return sortAscending ? aVal - bVal : bVal - aVal;
+    });
+
+    // Очищаем и добавляем отсортированные строки
+    rows.forEach(row => tbody.appendChild(row));
+
+    // Меняем иконку
+    const button = event.target.closest('button');
+    const icon = button.querySelector('i');
+    if (sortAscending) {
+        icon.className = 'bi bi-sort-up';
+    } else {
+        icon.className = 'bi bi-sort-down';
+    }
+
+    sortAscending = !sortAscending;
+}
+
+function refreshAverages() {
+    fetch('/api/global_averages')
+        .then(response => response.json())
+        .then(data => {
+            location.reload();
+        });
+}
+
+function exportData(format) {
+    alert('Экспорт данных в формате ' + format.toUpperCase() + ' начат...');
+    // Здесь будет реализация экспорта данных
+}
+</script>
+{% endblock %}

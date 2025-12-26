@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Главная - Панель продуктивности{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="jumbotron bg-light p-5 rounded mb-4">
+            <h1 class="display-4">
+                <i class="bi bi-graph-up text-primary"></i> Панель продуктивности
+            </h1>
+            <p class="lead">
+                Анализ данных о сне, задачах и продуктивности пользователей.
+                Подключено к облачной базе данных в реальном времени.
+            </p>
+            <hr class="my-4">
+            <p>
+                Используйте меню навигации для просмотра различных видов статистики и получения персональных рекомендаций.
+            </p>
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card text-white bg-primary mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-bar-chart"></i> Общая статистика
+                            </h5>
+                            <p class="card-text">
+                                Средние, минимальные и максимальные значения по всем пользователям
+                            </p>
+                            <a href="/stats" class="btn btn-light">Перейти</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-success mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-person-circle"></i> Персональная статистика
+                            </h5>
+                            <p class="card-text">
+                                Анализ данных конкретного пользователя и сравнение со средними
+                            </p>
+                            <a href="/user_stats" class="btn btn-light">Перейти</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-info mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-lightbulb"></i> Рекомендации
+                            </h5>
+                            <p class="card-text">
+                                Персональные и общие рекомендации для улучшения продуктивности
+                            </p>
+                            <a href="/recommendations" class="btn btn-light">Перейти</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-database"></i> Соединение с БД</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle"></i>
+                    <strong>Подключено к облачной базе данных</strong>
+                    <p class="mb-0">Хост: solatalogi.beget.app:3306</p>
+                </div>
+                <button class="btn btn-outline-primary" onclick="testConnection()">
+                    <i class="bi bi-arrow-clockwise"></i> Проверить соединение
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-info-circle"></i> Информация</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <i class="bi bi-moon text-primary"></i> Анализ данных о сне
+                    </li>
+                    <li class="list-group-item">
+                        <i class="bi bi-list-task text-success"></i> Отслеживание выполнения задач
+                    </li>
+                    <li class="list-group-item">
+                        <i class="bi bi-clock text-warning"></i> Мониторинг продуктивных часов
+                    </li>
+                    <li class="list-group-item">
+                        <i class="bi bi-graph-up text-info"></i> Визуализация статистики
+                    </li>
+                    <li class="list-group-item">
+                        <i class="bi bi-robot text-danger"></i> Персональные рекомендации
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function testConnection() {
+    fetch('/api/global_averages')
+        .then(response => response.json())
+        .then(data => {
+            alert('Соединение с базой данных успешно!');
+        })
+        .catch(error => {
+            alert('Ошибка соединения с базой данных');
+        });
+}
+</script>
+{% endblock %}

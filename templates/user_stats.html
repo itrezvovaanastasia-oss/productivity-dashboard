@@ -1,0 +1,455 @@
+{% extends "base.html" %}
+
+{% block title %}Пользовательская статистика - Панель продуктивности{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1><i class="bi bi-person-circle"></i> Персональная статистика</h1>
+        <p class="lead">Анализ данных конкретного пользователя и сравнение со средними показателями</p>
+    </div>
+</div>
+
+<!-- Форма выбора пользователя -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-search"></i> Выбор пользователя</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="/user_stats" class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Введите ID пользователя</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                            <input type="text" class="form-control" name="user_id"
+                                   value="{{ user_id or '' }}"
+                                   placeholder="Например: 123456" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Или выберите из списка</label>
+                        <select class="form-select" onchange="this.form.user_id.value=this.value">
+                            <option value="">Выберите пользователя...</option>
+                            {% for user in all_users %}
+                            <option value="{{ user.user_id }}"
+                                    {% if user.user_id == user_id %}selected{% endif %}>
+                                Пользователь {{ user.user_id }}
+                                {% if user.ideal_sleep_start %}
+                                (сон: {{ user.ideal_sleep_start }}-{{ user.ideal_sleep_end }})
+                                {% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Загрузить статистику
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if user_id %}
+<!-- Информация о пользователе -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-person"></i> Информация о пользователе #{{ user_id }}
+                    {% if user_data %}
+                    <span class="badge bg-light text-dark float-end">
+                        <i class="bi bi-calendar"></i> {{ user_stats|length }} записей
+                    </span>
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if user_data %}
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="info-card">
+                            <h6><i class="bi bi-moon text-primary"></i> Идеальный сон</h6>
+                            <h4>{{ user_data.ideal_sleep_start or 'Не задан' }} - {{ user_data.ideal_sleep_end or 'Не задан' }}</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="info-card">
+                            <h6><i class="bi bi-clock text-warning"></i> Продуктивные часы</h6>
+                            <h4>{{ user_data.productive_from or 'Не заданы' }} - {{ user_data.productive_to or 'Не заданы' }}</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="info-card">
+                            <h6><i class="bi bi-calendar-check text-success"></i> Последняя запись</h6>
+                            <h4>
+                                {% if user_stats %}
+                                {{ user_stats[0].date }}
+                                {% else %}
+                                Нет данных
+                                {% endif %}
+                            </h4>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="info-card">
+                            <h6><i class="bi bi-bar-chart text-danger"></i> Всего записей</h6>
+                            <h4>{{ user_stats|length }}</h4>
+                            <small>в базе данных</small>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i> Детальная информация о пользователе не найдена
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Сравнение со средними -->
+{% if comparison %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-graph-up-arrow"></i> Сравнение со средними показателями</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Показатель</th>
+                                <th>Ваш результат</th>
+                                <th>Среднее по всем</th>
+                                <th>Разница</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for key, data in comparison.comparison.items() %}
+                            <tr>
+                                <td>
+                                    {% if key == 'avg_sleep' %}
+                                    <i class="bi bi-moon text-primary"></i> Сон (ч)
+                                    {% elif key == 'avg_planned_tasks' %}
+                                    <i class="bi bi-list-check text-success"></i> Задачи (план)
+                                    {% elif key == 'avg_completed_tasks' %}
+                                    <i class="bi bi-check-circle text-success"></i> Задачи (факт)
+                                    {% elif key == 'task_completion_rate' %}
+                                    <i class="bi bi-percent text-success"></i> % выполнения
+                                    {% elif key == 'avg_prod_planned' %}
+                                    <i class="bi bi-clock-history text-warning"></i> Продуктивность (план)
+                                    {% elif key == 'avg_prod_used' %}
+                                    <i class="bi bi-clock-fill text-warning"></i> Продуктивность (факт)
+                                    {% elif key == 'productivity_rate' %}
+                                    <i class="bi bi-lightning text-warning"></i> % продуктивности
+                                    {% else %}
+                                    {{ key }}
+                                    {% endif %}
+                                </td>
+                                <td><strong>{{ data.user }}</strong></td>
+                                <td>{{ data.average }}</td>
+                                <td>
+                                    {% if data.difference > 0 %}
+                                    <span class="text-success">
+                                        <i class="bi bi-arrow-up"></i> +{{ data.difference }}%
+                                    </span>
+                                    {% elif data.difference < 0 %}
+                                    <span class="text-danger">
+                                        <i class="bi bi-arrow-down"></i> {{ data.difference }}%
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">0%</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if data.difference > 10 %}
+                                    <span class="badge bg-success">Выше среднего</span>
+                                    {% elif data.difference > 0 %}
+                                    <span class="badge bg-info">Немного выше</span>
+                                    {% elif data.difference < -10 %}
+                                    <span class="badge bg-danger">Ниже среднего</span>
+                                    {% elif data.difference < 0 %}
+                                    <span class="badge bg-warning">Немного ниже</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">На среднем</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Последние записи пользователя -->
+{% if user_stats %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-calendar-week"></i> Последние записи</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th><i class="bi bi-moon text-primary"></i> Сон</th>
+                                <th><i class="bi bi-list-task text-success"></i> Задачи</th>
+                                <th><i class="bi bi-clock text-warning"></i> Продуктивные часы</th>
+                                <th><i class="bi bi-percent text-info"></i> % выполнения</th>
+                                <th><i class="bi bi-lightning text-danger"></i> % продуктивности</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stat in user_stats[:10] %}
+                            <tr>
+                                <td><strong>{{ stat.date }}</strong></td>
+                                <td>{{ "%.2f"|format(stat.sleep_duration) }} ч</td>
+                                <td>{{ stat.completed_tasks }}/{{ stat.planned_tasks }}</td>
+                                <td>{{ "%.2f"|format(stat.productive_hours_used) }}/{{ "%.2f"|format(stat.productive_hours_planned) }} ч</td>
+                                <td>
+                                    <span class="badge
+                                        {% if stat.task_completion_rate >= 80 %}bg-success
+                                        {% elif stat.task_completion_rate >= 60 %}bg-warning
+                                        {% else %}bg-danger{% endif %}">
+                                        {{ stat.task_completion_rate }}%
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge
+                                        {% if stat.productivity_rate is not none and stat.productivity_rate >= 80 %}bg-success
+                                        {% elif stat.productivity_rate is not none and stat.productivity_rate >= 60 %}bg-warning
+                                        {% else %}bg-danger{% endif %}">
+                                        {% if stat.productivity_rate is not none %}
+                                            {{ stat.productivity_rate }}%
+                                        {% else %}
+                                            Н/Д
+                                        {% endif %}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if user_stats|length > 10 %}
+                <div class="text-center mt-3">
+                    <button class="btn btn-outline-primary" onclick="loadMoreStats()">
+                        <i class="bi bi-arrow-down"></i> Показать еще
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i> У пользователя #{{ user_id }} нет записей в статистике
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- График прогресса пользователя -->
+<!-- График прогресса пользователя -->
+
+
+{% else %}
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            Введите ID пользователя в поле выше, чтобы увидеть его статистику
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// График прогресса пользователя
+{% if user_stats and user_stats|length > 1 %}
+    try {
+        // Используем безопасный JSON
+        const userStats = {{ user_stats|tojson|safe }};
+
+        // Сортируем по дате (от старых к новым для правильного отображения прогресса)
+        const sortedStats = [...userStats].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        const dates = sortedStats.map(stat => {
+            const date = new Date(stat.date);
+            return date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+        });
+
+        const sleepData = sortedStats.map(stat => parseFloat(stat.sleep_duration));
+        const taskData = sortedStats.map(stat => parseFloat(stat.task_completion_rate || 0));
+        const prodData = sortedStats.map(stat => parseFloat(stat.productivity_rate || 0));
+
+        // Создаем подграфики (subplots)
+        const fig = makeSubplots({
+            rows: 3,
+            cols: 1,
+            subplot_titles: ['Продолжительность сна (часы)', 'Процент выполнения задач (%)', 'Продуктивность (%)'],
+            vertical_spacing: 0.1,
+            shared_xaxes: true
+        });
+
+        // График сна
+        fig.addTrace({
+            x: dates,
+            y: sleepData,
+            name: 'Сон',
+            type: 'scatter',
+            mode: 'lines+markers',
+            line: {color: '#3498db', width: 3},
+            marker: {size: 8, color: '#3498db'},
+            hovertemplate: '<b>%{x}</b><br>Сон: %{y:.2f} ч<extra></extra>'
+        }, 1, 1);
+
+        // График выполнения задач
+        fig.addTrace({
+            x: dates,
+            y: taskData,
+            name: 'Выполнение задач',
+            type: 'scatter',
+            mode: 'lines+markers',
+            line: {color: '#2ecc71', width: 3},
+            marker: {size: 8, color: '#2ecc71'},
+            hovertemplate: '<b>%{x}</b><br>Задачи: %{y:.1f}%<extra></extra>'
+        }, 2, 1);
+
+        // График продуктивности
+        fig.addTrace({
+            x: dates,
+            y: prodData,
+            name: 'Продуктивность',
+            type: 'scatter',
+            mode: 'lines+markers',
+            line: {color: '#e74c3c', width: 3},
+            marker: {size: 8, color: '#e74c3c'},
+            hovertemplate: '<b>%{x}</b><br>Продуктивность: %{y:.1f}%<extra></extra>'
+        }, 3, 1);
+
+        // Настройки layout
+        fig.updateLayout({
+            title: {
+                text: `Динамика показателей пользователя #{{ user_id }}`,
+                font: {size: 18}
+            },
+            height: 600,
+            showlegend: false,
+            hovermode: 'x unified',
+            margin: {l: 50, r: 30, t: 80, b: 50}
+        });
+
+        // Настройки осей для каждого подграфика
+        fig.update_xaxes(title_text="Дата", row=3, col=1);
+
+        fig.update_yaxes(title_text="Часы", row=1, col=1, range: [0, Math.max(...sleepData) * 1.2]);
+        fig.update_yaxes(title_text="%", row=2, col=1, range: [0, 100]);
+        fig.update_yaxes(title_text="%", row=3, col=1, range: [0, 100]);
+
+        // Добавляем горизонтальные линии для целей
+        fig.addShape({
+            type: 'line',
+            x0: dates[0],
+            x1: dates[dates.length - 1],
+            y0: 8,
+            y1: 8,
+            line: {color: '#2980b9', width: 2, dash: 'dash'},
+            row: 1,
+            col: 1
+        });
+
+        fig.addShape({
+            type: 'line',
+            x0: dates[0],
+            x1: dates[dates.length - 1],
+            y0: 80,
+            y1: 80,
+            line: {color: '#27ae60', width: 2, dash: 'dash'},
+            row: 2,
+            col: 1
+        });
+
+        fig.addShape({
+            type: 'line',
+            x0: dates[0],
+            x1: dates[dates.length - 1],
+            y0: 80,
+            y1: 80,
+            line: {color: '#c0392b', width: 2, dash: 'dash'},
+            row: 3,
+            col: 1
+        });
+
+        // Добавляем аннотации для целей
+        fig.addAnnotation({
+            x: dates[0],
+            y: 8,
+            text: 'Цель: 8 часов',
+            showarrow: false,
+            font: {color: '#2980b9', size: 10},
+            row: 1,
+            col: 1
+        });
+
+        fig.addAnnotation({
+            x: dates[0],
+            y: 80,
+            text: 'Цель: 80%',
+            showarrow: false,
+            font: {color: '#27ae60', size: 10},
+            row: 2,
+            col: 1
+        });
+
+        fig.addAnnotation({
+            x: dates[0],
+            y: 80,
+            text: 'Цель: 80%',
+            showarrow: false,
+            font: {color: '#c0392b', size: 10},
+            row: 3,
+            col: 1
+        });
+
+        Plotly.newPlot('userProgressChart', fig.data, fig.layout, {
+            responsive: true,
+            displayModeBar: true,
+            displaylogo: false,
+            modeBarButtonsToRemove: ['sendDataToCloud', 'autoScale2d', 'resetScale2d']
+        });
+
+    } catch (error) {
+        console.error('Ошибка при построении графика:', error);
+        document.getElementById('userProgressChart').innerHTML =
+            '<div class="alert alert-danger"><i class="bi bi-exclamation-triangle"></i> Ошибка при построении графика: ' + error.message + '</div>';
+    }
+{% endif %}
+
+function loadMoreStats() {
+    alert('Функция загрузки дополнительных записей будет реализована в следующей версии');
+}
+</script>
+{% endblock %}

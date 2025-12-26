@@ -1,0 +1,252 @@
+/* Основные стили */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Карточки статистики */
+.stat-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    transition: transform 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+}
+
+.stat-card h3 {
+    font-weight: bold;
+    color: #2c3e50;
+    margin: 10px 0;
+}
+
+.stat-card h6 {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Карточки информации */
+.info-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.info-card h4 {
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.info-card h6 {
+    opacity: 0.9;
+    font-size: 0.9rem;
+}
+
+/* Графики */
+.chart-container {
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    min-height: 500px;
+}
+
+/* Улучшенные карточки для статистики */
+.stat-card {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    border: none;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+.stat-card h3 {
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 10px 0;
+    font-size: 2.5rem;
+}
+
+.stat-card h6 {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+/* Адаптивность графиков */
+@media (max-width: 768px) {
+    .chart-container {
+        height: 400px !important;
+        padding: 10px;
+    }
+
+    .stat-card h3 {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .chart-container {
+        height: 350px !important;
+    }
+
+    .stat-card {
+        padding: 15px;
+    }
+}
+
+/* Улучшения для Plotly графиков */
+.js-plotly-plot .plotly .modebar {
+    top: 10px !important;
+    right: 10px !important;
+}
+
+/* Анимация загрузки графиков */
+@keyframes fadeInChart {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.chart-container {
+    animation: fadeInChart 0.8s ease-out;
+}
+
+/* Навигация */
+.navbar {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+/* Таблицы */
+.table-hover tbody tr:hover {
+    background-color: rgba(52, 152, 219, 0.1);
+}
+
+/* Бейджи */
+.badge {
+    font-weight: 500;
+    padding: 5px 10px;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .stat-card, .info-card {
+        margin-bottom: 15px;
+    }
+
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+
+    .display-4 {
+        font-size: 2.5rem;
+    }
+}
+
+/* Кастомные цвета */
+.bg-primary { background-color: #3498db !important; }
+.bg-success { background-color: #2ecc71 !important; }
+.bg-info { background-color: #1abc9c !important; }
+.bg-warning { background-color: #f39c12 !important; }
+.bg-danger { background-color: #e74c3c !important; }
+
+.text-primary { color: #3498db !important; }
+.text-success { color: #2ecc71 !important; }
+.text-info { color: #1abc9c !important; }
+.text-warning { color: #f39c12 !important; }
+.text-danger { color: #e74c3c !important; }
+
+/* Кнопки */
+.btn-primary {
+    background-color: #3498db;
+    border-color: #3498db;
+}
+
+.btn-primary:hover {
+    background-color: #2980b9;
+    border-color: #2980b9;
+}
+
+.btn-success {
+    background-color: #2ecc71;
+    border-color: #2ecc71;
+}
+
+.btn-success:hover {
+    background-color: #27ae60;
+    border-color: #27ae60;
+}
+
+/* Заголовки */
+h1, h2, h3, h4, h5, h6 {
+    color: #2c3e50;
+}
+
+.lead {
+    color: #7f8c8d;
+}
+
+/* Карточки */
+.card {
+    border: none;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    transition: transform 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+    font-weight: 600;
+}
+
+/* Иконки */
+.bi {
+    margin-right: 5px;
+}
+
+/* Подвал */
+footer {
+    margin-top: 50px;
+}

@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Рекомендации - Панель продуктивности{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1><i class="bi bi-lightbulb"></i> Рекомендации</h1>
+        <p class="lead">Персональные и общие рекомендации для улучшения продуктивности</p>
+    </div>
+</div>
+
+{% if user_id %}
+<!-- Персональные рекомендации -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-person-circle"></i> Персональные рекомендации для пользователя #{{ user_id }}
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if user_recommendations %}
+                <div class="row">
+                    {% for rec in user_recommendations %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card recommendation-card
+                            {% if rec.priority == 'высокий' %}border-danger
+                            {% elif rec.priority == 'средний' %}border-warning
+                            {% else %}border-info{% endif %}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="card-title">
+                                            <i class="bi
+                                                {% if rec.category == 'сон' %}bi-moon
+                                                {% elif rec.category == 'продуктивность' %}bi-lightning
+                                                {% elif rec.category == 'задачи' %}bi-list-task
+                                                {% else %}bi-info-circle{% endif %}">
+                                            </i>
+                                            {{ rec.category|capitalize }}
+                                        </h6>
+                                        <p class="card-text">{{ rec.message }}</p>
+                                    </div>
+                                    <span class="badge
+                                        {% if rec.priority == 'высокий' %}bg-danger
+                                        {% elif rec.priority == 'средний' %}bg-warning
+                                        {% else %}bg-info{% endif %}">
+                                        {{ rec.priority }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    У вас пока нет персональных рекомендаций.
+                    Продолжайте использовать бота для сбора данных.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Общие рекомендации -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-people"></i> Общие рекомендации для всех пользователей</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for rec in general_recommendations %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <i class="bi
+                                        {% if rec.category == 'сон' %}bi-moon text-primary
+                                        {% elif rec.category == 'продуктивность' %}bi-lightning text-warning
+                                        {% elif rec.category == 'задачи' %}bi-list-task text-success
+                                        {% else %}bi-clock text-info{% endif %}">
+                                    </i>
+                                    {{ rec.category|capitalize }}
+                                </h6>
+                                <p class="card-text">{{ rec.message }}</p>
+                                <div class="mt-2">
+                                    <span class="badge
+                                        {% if rec.priority == 'высокий' %}bg-danger
+                                        {% elif rec.priority == 'средний' %}bg-warning
+                                        {% else %}bg-info{% endif %}">
+                                        Приоритет: {{ rec.priority }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Советы по улучшению -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Распорядок дня</h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-primary"></div>
+                        <div class="timeline-content">
+                            <h6>7:00 - Подъем</h6>
+                            <p>Стакан воды, легкая зарядка, контрастный душ</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-success"></div>
+                        <div class="timeline-content">
+                            <h6>9:00-12:00 - Пик продуктивности</h6>
+                            <p>Важные и сложные задачи, творческая работа</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-warning"></div>
+                        <div class="timeline-content">
+                            <h6>13:00-14:00 - Обед и отдых</h6>
+                            <p>Прогулка, медитация, легкий обед</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-info"></div>
+                        <div class="timeline-content">
+                            <h6>14:00-17:00 - Вторая волна</h6>
+                            <p>Рутинные задачи, встречи, обучение</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-danger"></div>
+                        <div class="timeline-content">
+                            <h6>22:00 - Подготовка ко сну</h6>
+                            <p>Выключить экраны, чтение, планирование завтрашнего дня</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-tools"></i> Инструменты для продуктивности</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Метод Pomodoro</h6>
+                            <small class="text-muted">25/5 минут</small>
+                        </div>
+                        <p class="mb-1">25 минут работы, 5 минут отдыха, после 4 циклов - длинный перерыв</p>
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Матрица Эйзенхауэра</h6>
+                            <small class="text-muted">Приоритеты</small>
+                        </div>
+                        <p class="mb-1">Разделение задач на важные/срочные для эффективного планирования</p>
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Правило 2 минут</h6>
+                            <small class="text-muted">Быстрые задачи</small>
+                        </div>
+                        <p class="mb-1">Если задача занимает менее 2 минут - делайте ее сразу</p>
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Техника 90 минут</h6>
+                            <small class="text-muted">Концентрация</small>
+                        </div>
+                        <p class="mb-1">90 минут глубокой работы, затем 20-30 минут перерыва</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+.timeline-marker {
+    position: absolute;
+    left: -30px;
+    top: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+.timeline-content {
+    padding-left: 10px;
+}
+.recommendation-card {
+    transition: transform 0.3s;
+}
+.recommendation-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %}

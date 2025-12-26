@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Персональные данные - Панель продуктивности{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1><i class="bi bi-gear"></i> Персональные данные</h1>
+        <p class="lead">Настройки и сводная информация о пользователе</p>
+    </div>
+</div>
+
+{% if user_id %}
+<!-- Информация о пользователе -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-person-badge"></i> Данные пользователя #{{ user_id }}
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if user_data %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5><i class="bi bi-clock-history"></i> Настройки времени</h5>
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <th scope="row"><i class="bi bi-moon text-primary"></i> Идеальный сон</th>
+                                    <td>
+                                        {% if user_data.ideal_sleep_start and user_data.ideal_sleep_end %}
+                                        {{ user_data.ideal_sleep_start }} - {{ user_data.ideal_sleep_end }}
+                                        {% else %}
+                                        <span class="text-muted">Не установлено</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><i class="bi bi-lightning text-warning"></i> Продуктивные часы</th>
+                                    <td>
+                                        {% if user_data.productive_from and user_data.productive_to %}
+                                        {{ user_data.productive_from }} - {{ user_data.productive_to }}
+                                        {% else %}
+                                        <span class="text-muted">Не установлено</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h5><i class="bi bi-graph-up"></i> Состояние системы</h5>
+                        <div class="list-group">
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                Текущий статус
+                                <span class="badge bg-{% if user_data.state == 'idle' %}success{% else %}warning{% endif %} rounded-pill">
+                                    {{ user_data.state if user_data.state else 'idle' }}
+                                </span>
+                            </div>
+
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                Данные в JSON
+                                <span class="badge bg-secondary rounded-pill">
+                                    {{ user_data|tojson|length }} символов
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button class="btn btn-outline-primary btn-sm" onclick="showRawData()">
+                                <i class="bi bi-code"></i> Показать сырые данные
+                            </button>
+                            <button class="btn btn-outline-warning btn-sm" onclick="refreshData()">
+                                <i class="bi bi-arrow-clockwise"></i> Обновить данные
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Сырые данные (скрыты по умолчанию) -->
+                <div id="rawData" class="mt-4" style="display: none;">
+                    <h6><i class="bi bi-code-slash"></i> Сырые данные пользователя</h6>
+                    <pre class="bg-light p-3 rounded"><code>{{ user_data|tojson(indent=2) }}</code></pre>
+                </div>
+
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Не удалось загрузить данные пользователя #{{ user_id }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Сводная статистика -->
+{% if stats_summary %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Сводная статистика</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <h6><i class="bi bi-calendar-week text-primary"></i> Всего дней</h6>
+                            <h3>{{ stats_summary.total_days }}</h3>
+                            <small>с записанной статистикой</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <h6><i class="bi bi-moon text-info"></i> Средний сон</h6>
+                            <h3>{{ "%.2f"|format(stats_summary.avg_sleep) }} ч</h3>
+                            <small>в сутки</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <h6><i class="bi bi-list-task text-success"></i> Выполнение задач</h6>
+                            <h3>{{ "%.1f"|format(stats_summary.avg_task_completion) }}%</h3>
+                            <small>средний показатель</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <h6><i class="bi bi-lightning text-warning"></i> Продуктивность</h6>
+                            <h3>{{ "%.1f"|format(stats_summary.avg_productivity) }}%</h3>
+                            <small>использование часов</small>
+                        </div>
+                    </div>
+                </div>
+
+                {% if stats_summary.last_update %}
+                <div class="text-center mt-3">
+                    <small class="text-muted">
+                        <i class="bi bi-calendar-check"></i>
+                        Последняя запись: {{ stats_summary.last_update }}
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            У пользователя нет статистики для отображения сводки
+        </div>
+    </div>
+</div>
+{% endif %}
+
+
+
+{% else %}
+<!-- Сообщение, если пользователь не выбран -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-person-plus"></i> Выберите пользователя</h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="py-5">
+                    <i class="bi bi-person-circle display-1 text-muted"></i>
+                    <h4 class="mt-3">Пользователь не выбран</h4>
+                    <p class="text-muted">
+                        Для просмотра персональных данных необходимо выбрать пользователя.
+                    </p>
+                    <a href="/user_stats" class="btn btn-primary btn-lg mt-3">
+                        <i class="bi bi-search"></i> Перейти к выбору пользователя
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Показать/скрыть сырые данные
+function showRawData() {
+    const rawDataDiv = document.getElementById('rawData');
+    if (rawDataDiv.style.display === 'none') {
+        rawDataDiv.style.display = 'block';
+    } else {
+        rawDataDiv.style.display = 'none';
+    }
+}
+
+// Обновить данные пользователя
+function refreshData() {
+    window.location.reload();
+}
+
+// Экспорт данных пользователя
+function exportUserData(format) {
+    alert(`Экспорт данных пользователя в формате ${format.toUpperCase()} будет выполнен.`);
+    // Здесь будет реализация экспорта через API
+}
+
+// Подтверждение действий
+function confirmAction(action) {
+    const actions = {
+        'reset_settings': {
+            title: 'Сброс настроек',
+            message: 'Вы уверены, что хотите сбросить все настройки пользователя к значениям по умолчанию?',
+            confirmText: 'Сбросить',
+            cancelText: 'Отмена'
+        },
+        'clear_history': {
+            title: 'Очистка истории',
+            message: 'Это действие удалит всю историю статистики пользователя. Вы уверены?',
+            confirmText: 'Очистить',
+            cancelText: 'Отмена'
+        },
+        'delete_account': {
+            title: 'Удаление аккаунта',
+            message: 'ВНИМАНИЕ: Это действие полностью удалит аккаунт пользователя и все связанные данные. Это необратимо!',
+            confirmText: 'Удалить навсегда',
+            cancelText: 'Отмена'
+        }
+    };
+
+    const actionInfo = actions[action];
+    if (!actionInfo) return;
+
+    if (confirm(`${actionInfo.title}\n\n${actionInfo.message}`)) {
+        alert(`Действие "${actionInfo.title}" выполнено (в демо-режиме)`);
+        // Здесь будет реализация через API
+    }
+}
+
+// При загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Страница персональных данных загружена');
+
+    // Если есть пользователь, можно загрузить дополнительные данные
+    {% if user_id %}
+        console.log('Текущий пользователь:', {{ user_id }});
+    {% endif %}
+});
+</script>
+{% endblock %}
