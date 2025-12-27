@@ -1,0 +1,5 @@
+services:
+  prod_monitor:
+    build: .
+    ports:
+      - 80:80
